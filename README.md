@@ -33,4 +33,4 @@ wear detection are not implemented.
 
 ## Result
 
-[Example output](images/example-output.png)
+![Example output](images/example-output.png)
