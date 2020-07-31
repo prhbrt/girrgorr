@@ -9,7 +9,8 @@ from tqdm.auto import tqdm
 def get_metrics(filename,
                 window_size=5, batch_size=1000,
                 reader=actigraph, progressbar=False,
-                metrics=['anglex', 'angley', 'anglez', 'enmo']
+                metrics=['angles', 'enmo'],
+                high_pass_frequency_angles=0.2,
                 ):
     """Calculates these metrics for every `window_size`
     seconds in the CSV-file:
@@ -27,22 +28,30 @@ def get_metrics(filename,
     rows are used to determine the sampling period. Uniform
     sampling is assumed from here on, but not asserted since
     this would require slow datetime parsing."""
+
+    unknown_metrics = set(metrics) - {'angles', 'enmo'}
+    assert len(unknown_metrics) == 0, f"Unknown metrics: {unknown_metrics}"
+
     sampling_period = reader.get_sampling_period(filename)
     rows_in_batch = window_size * batch_size * 1000 // sampling_period
 
     if progressbar:
         def progressbar(x):
             expected_rows = int(ceil(reader.estimate_lines(filename) / rows_in_batch))
-            return tqdm(x, total=expected_rows)
+            return tqdm(x, total=expected_rows, leave=False, desc=filename.split('/')[-1])
     else:
         def progressbar(x):
             return x
 
     samples_in_a_window = window_size * 1000 // sampling_period
     result = []
+
     # read the CSV file in batches of `rows_in_batch` rows.
     for chunk in progressbar(reader.batched(filename, batch_size=rows_in_batch)):
         xyz = chunk[['accx', 'accy', 'accz']].values
+        for column in ('accx', 'accy', 'accz'):
+            xyz = chunk[column]
+
         xyz = metric_functions.seperate_time_windows(xyz, window_size, sampling_period)
 
         dataframe = {
@@ -54,7 +63,12 @@ def get_metrics(filename,
             'accz': xyz[:, 0, 2],
         }
         if 'angles' in metrics:
-            anglex, angley, anglez = metric_functions.windowed_angles(xyz)
+            median_window_size = round(1000 / sampling_period / high_pass_frequency_angles)
+
+            xyz_rolling_median = chunk[['accx', 'accy', 'accz']].rolling(median_window_size).median().values
+            xyz_rolling_median[:median_window_size-1] = xyz_rolling_median[median_window_size]
+
+            anglex, angley, anglez = metric_functions.windowed_angles(xyz_rolling_median)
             dataframe.update({
                 'anglex': anglex,
                 'angley': angley,
@@ -73,5 +87,5 @@ def get_metrics(filename,
         )
 
     result = pandas.DataFrame(result)
-    result['datetime'] = pandas.to_datetime(result['datetime'])
+    # result['datetime'] = pandas.to_datetime(result['datetime'], format='%d-%m-%Y %H:%M:%S.%f')
     return result

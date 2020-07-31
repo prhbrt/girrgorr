@@ -14,13 +14,13 @@ def get_sampling_period(fn, column='Timestamp'):
         d = fn
     else:
         raise ValueError("fn must be dataframe or filename")
-    d[column] = pandas.to_datetime(d[column])
+    d[column] = pandas.to_datetime(d[column], format='%d-%m-%Y %H:%M:%S.%f')
 
     sampling_period = numpy.unique(numpy.diff(d[column].values))
     assert len(sampling_period) > 0, "The CSV-file is empty"
     assert len(sampling_period) == 1, (
         f"Different sampling periods: "
-        f"{', '.join(map(int, sampling_period ))}")
+        f"{', '.join(map(str, sampling_period ))}")
     return int(sampling_period [0] / 1000000)  # milliseconds
 
 
@@ -42,5 +42,6 @@ def estimate_lines(fn, encoding='utf-8',
 def batched(filename, batch_size, acceleration_columns=['Accelerometer X', 'Accelerometer Y', 'Accelerometer Z']):
     """Returns batches of `batch_size` rows from an actigraph CSV-file"""
     for chunk in pandas.read_csv(filename, chunksize=batch_size, skiprows=10):
-        chunk.rename(columns=dict(zip(['Timestamp'] + acceleration_columns, ['datetime', 'accx', 'accy', 'accz'])), inplace=True)
+        chunk.rename(columns=dict(zip(['Timestamp'] + acceleration_columns, ['datetime', 'accx', 'accy', 'accz'])),
+                     inplace=True)
         yield chunk

@@ -25,7 +25,7 @@ def windowed_angles(xyz):
     returned. These three angles only represent the
     direction of the acceleration, not the
     magnitude."""
-    # seperate median for the three angles
+    # separate median for the three angles
     # over the all samples in the window.
     xyz_median = numpy.median(xyz, axis=1)
 
