@@ -29,7 +29,7 @@ def estimate_lines(fn, encoding='utf-8',
     """Estimate the number of lines in a file by
     extrapolating the number of lines in the first
     `nbytes` bytes to the total file size. Lines
-    are ended with `'\n'.encode(encoding)`. Usefull
+    are ended with `'\n'.encode(encoding)`. Useful
     for approximating progress bars."""
     size = os.stat(fn).st_size
     marker = '\n'.encode(encoding)
