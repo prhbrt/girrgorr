@@ -64,11 +64,21 @@ def get_metrics(filename,
         }
         if 'angles' in metrics:
             median_window_size = round(1000 / sampling_period / high_pass_frequency_angles)
+            median_window_size = 2 * median_window_size // 2 + 1 # ensure the window is odd
 
-            xyz_rolling_median = chunk[['accx', 'accy', 'accz']].rolling(median_window_size).median().values
-            xyz_rolling_median[:median_window_size-1] = xyz_rolling_median[median_window_size]
+            xyz_rolling_median = chunk[['accx', 'accy', 'accz']].rolling(median_window_size,
+                                                                         center=True).median().values
+
+            nan_area = median_window_size // 2
+            xyz_rolling_median[:nan_area] = xyz_rolling_median[nan_area]
+            xyz_rolling_median[-nan_area:] = xyz_rolling_median[-nan_area-1]
+
+            xyz_rolling_median = metric_functions.seperate_time_windows(xyz_rolling_median, window_size,
+                                                                        sampling_period)
 
             anglex, angley, anglez = metric_functions.windowed_angles(xyz_rolling_median)
+
+
             dataframe.update({
                 'anglex': anglex,
                 'angley': angley,

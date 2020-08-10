@@ -18,30 +18,26 @@ def seperate_time_windows(xyz, window_size, sampling_period):
 
 
 def windowed_angles(xyz):
-    """Calculate the median acceleration over the
-    window for all directions, then `anglex =
-    atan(x, sqrt(y**2 + z**2))` and similar for
-    angley and anglez. The three angles are
-    returned. These three angles only represent the
-    direction of the acceleration, not the
+    """Calculate the angles for all directions, where
+    `anglex = atan(x, sqrt(y**2 + z**2))` and similar
+    for angley and anglez. Returns the mean over these
+    angles w.r.t. dimension 1. These three angles only
+    represent the direction of the acceleration, not the
     magnitude."""
-    # separate median for the three angles
-    # over the all samples in the window.
-    xyz_median = numpy.median(xyz, axis=1)
 
     # Vectorized version of:
     # atan2(x, sqrt(y**2 + z**2))
     # atan2(y, sqrt(x**2 + z**2))
     # atan2(z, sqrt(x**2 + y**2))
     anglex, angley, anglez = numpy.arctan2(
-        xyz_median,
+        xyz,
         numpy.sqrt(
-            xyz_median[:, [1, 2, 0]] ** 2 +  # y, z, x respectively
-            xyz_median[:, [2, 0, 1]] ** 2  # z, x, y respectively
+            xyz[:, [1, 2, 0]] ** 2 +  # y, z, x respectively
+            xyz[:, [2, 0, 1]] ** 2  # z, x, y respectively
         )
     ).T * 180 / numpy.pi
 
-    return anglex, angley, anglez
+    return anglex.mean(1), angley.mean(1), anglez.mean(1)
 
 
 def enmo(xyz):
