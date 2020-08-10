@@ -7,7 +7,7 @@ def seperate_time_windows(xyz, window_size, sampling_period):
     different windows, the second over the samples
     in the window (and the third over the x, y and
     z-components). Samples that don't fill a full
-    window are dropped."""
+        window are dropped."""
     # size of one window
     dim1 = window_size * 1000 // sampling_period
     # number of windows
