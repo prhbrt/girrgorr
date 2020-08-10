@@ -29,15 +29,17 @@ def windowed_angles(xyz):
     # atan2(x, sqrt(y**2 + z**2))
     # atan2(y, sqrt(x**2 + z**2))
     # atan2(z, sqrt(x**2 + y**2))
-    anglex, angley, anglez = numpy.arctan2(
+    
+    angles = numpy.arctan2(
         xyz,
         numpy.sqrt(
-            xyz[:, [1, 2, 0]] ** 2 +  # y, z, x respectively
-            xyz[:, [2, 0, 1]] ** 2  # z, x, y respectively
+            xyz[:, :, [1, 2, 0]] ** 2 +  # y, z, x respectively
+            xyz[:, :, [2, 0, 1]] ** 2  # z, x, y respectively
         )
-    ).T * 180 / numpy.pi
+    ) * 180 / numpy.pi
+    anglex, angley, anglez = angles.mean(1).T
 
-    return anglex.mean(1), angley.mean(1), anglez.mean(1)
+    return anglex, angley, anglez
 
 
 def enmo(xyz):

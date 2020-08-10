@@ -49,8 +49,8 @@ def get_metrics(filename,
     # read the CSV file in batches of `rows_in_batch` rows.
     for chunk in progressbar(reader.batched(filename, batch_size=rows_in_batch)):
         xyz = chunk[['accx', 'accy', 'accz']].values
-        for column in ('accx', 'accy', 'accz'):
-            xyz = chunk[column]
+#         for column in ('accx', 'accy', 'accz'):
+#             xyz = chunk[column]
 
         xyz = metric_functions.seperate_time_windows(xyz, window_size, sampling_period)
 
@@ -65,19 +65,23 @@ def get_metrics(filename,
         if 'angles' in metrics:
             median_window_size = round(1000 / sampling_period / high_pass_frequency_angles)
             median_window_size = 2 * median_window_size // 2 + 1 # ensure the window is odd
-
             xyz_rolling_median = chunk[['accx', 'accy', 'accz']].rolling(median_window_size,
                                                                          center=True).median().values
-
             nan_area = median_window_size // 2
+            
             xyz_rolling_median[:nan_area] = xyz_rolling_median[nan_area]
             xyz_rolling_median[-nan_area:] = xyz_rolling_median[-nan_area-1]
-
+            
             xyz_rolling_median = metric_functions.seperate_time_windows(xyz_rolling_median, window_size,
                                                                         sampling_period)
 
             anglex, angley, anglez = metric_functions.windowed_angles(xyz_rolling_median)
 
+            
+            
+#             lengths = numpy.sqrt(medians[:, [1, 2, 0]] ** 2 + medians[:, [2, 0, 1]] ** 2)
+#             angles = numpy.arctan2(medians, lengths) * 180 / numpy.pi
+#             mean_angles = angles.reshape(-1, 500, 3).mean(1)
 
             dataframe.update({
                 'anglex': anglex,
