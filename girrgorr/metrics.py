@@ -1,7 +1,7 @@
 import numpy
 
 
-def seperate_time_windows(xyz, window_size, sampling_period):
+def separate_time_windows(xyz, window_size, sampling_period):
     """Reshape the first dimension of xyz into
     two dimensions, the first iterating over
     different windows, the second over the samples
@@ -46,3 +46,8 @@ def enmo(xyz):
     """For each window, calculates the ENMO value."""
     en = numpy.sqrt(numpy.sum(xyz ** 2, axis=2))
     return numpy.clip(en - 1, 0, None).mean(axis=1)
+
+
+def en(xyz):
+    """For each window, calculates the EN value."""
+    return numpy.sqrt(numpy.sum(xyz ** 2, axis=2)).mean(axis=1)

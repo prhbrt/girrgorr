@@ -40,7 +40,8 @@ def estimate_lines(fn, encoding='utf-8',
 
 
 def batched(filename, batch_size, acceleration_columns=['Accelerometer X', 'Accelerometer Y', 'Accelerometer Z']):
-    """Returns batches of `batch_size` rows from an actigraph CSV-file"""
+    """Returns batches of `batch_size` rows from an Actigraph CSV-file."""
+
     for chunk in pandas.read_csv(filename, chunksize=batch_size, skiprows=10):
         chunk.rename(columns=dict(zip(['Timestamp'] + acceleration_columns, ['datetime', 'accx', 'accy', 'accz'])),
                      inplace=True)
